@@ -10,6 +10,7 @@ from gender import gender_by_name
 
 sep = '||||'
 
+# basic data wrangling and add new columns to be usde later
 def prepare_df_for_plays(path):
     df = pd.read_csv(path)
     df = df.set_index('Dataline')
@@ -32,9 +33,11 @@ def prepare_df_for_plays(path):
 
     return df
 
+# returns a string that represents a relationship between two players
 def make_relationship(a, b):
     return sep.join(sorted([a, b]))
 
+# identifies conversation and participants, then encode them into new columns 
 def prepare_df_by_encoding(df):
     m = df[['Code', 'PlayerLine']].groupby(['Code']).agg(lambda x: sep.join(x))
     m = m.reset_index()
@@ -53,6 +56,7 @@ def prepare_df_by_encoding(df):
         is_first_line = line_number == 1
         is_last_line = i + 1 >= len(m) or m.at[i + 1, 'Act'] != r['Act'] or m.at[i + 1, 'Scene'] != r['Scene']
     
+        # participants identification
         if not is_first_line and not is_last_line:
             prev = m.at[i - 1, 'Player']
             next = m.at[i + 1, 'Player']
@@ -62,6 +66,7 @@ def prepare_df_by_encoding(df):
     m = m.applymap(lambda x: x if x else np.NaN )
     return m
 
+# returns a matrix that represents ralationships and relationship importance
 def extract_matrix(df, play, encoded_df):    
     players = sorted(encoded_df[encoded_df.Play == play].Player.unique())
     players = [p for p in players if p not in ['All', 'Prologue']]
@@ -77,6 +82,7 @@ def extract_matrix(df, play, encoded_df):
     
     return matrix    
 
+# returns a float value that represent emotion statbility that calculated by standard deviations of sentiment values
 def personality(df, play, player):    
     player_df = df[(df.Play == play) & (df.Player == player)]                          
     sentiments = [TextBlob(line).sentiment for line in player_df.PlayerLine]
@@ -87,10 +93,12 @@ def personality(df, play, player):
     score = round(np.std(polarities) * np.std(subjectivities) * 100 / (percentage + 1), 2)
     return score    
 
+# returns something like '★★★' to represent an importance of a relationship
 def importance_of_edge(edge, matrix):
     percentage = matrix.loc[edge[0], edge[1]]//(matrix.sum().sum()//100)
     return '★' * percentage
 
+# network visualization
 def plot_matrix(df, play, encoded_df):
     mat = extract_matrix(df, play, encoded_df)
     players = [c for c in list(mat.columns) if mat[c].sum() > 0]
