@@ -32,8 +32,10 @@ mod = MultinomialNB()
 mod.fit(dv.transform(x_train), y_train)
 
 def gender_by_name(name):
+    
+    name = name.lower()
     ms = ["king","sir","lord","prince"]
-    fs = ["queen","lady","princess","nurse"]
+    fs = ["queen","lady","princess","nurse", 'juliet']
     if(any(m in name for m in ms)): return 0
     if(any(f in name for f in fs)): return 1
     vector = dv.transform(features([name])).toarray()
