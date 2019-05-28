@@ -5,6 +5,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import MultinomialNB
+
 def features(name):
     return{
         'first-letter':name[0],
@@ -12,10 +13,10 @@ def features(name):
         'first3-letter':name[0:3],
         'last-letter':name[-1],
         'last2-letter':name[-2:],
-        'last3-letter':name[-3:],
-
+        'last3-letter':name[-3:]
     }
 features = np.vectorize(features)
+
 baby= pd.read_csv("data/name.csv")
 baby.columns=['name','sex']
 baby=baby.drop_duplicates()
@@ -31,6 +32,7 @@ my_xfeatures = dv.transform(dfX_train)
 dclf.fit(my_xfeatures,dfy_train)
 mnames=["king","sir","lord","prince"]
 fnames=["queen","lady","princess","nurse"]
+
 def genderclassify(name):
     for mname in mnames:
         if mname in name:
